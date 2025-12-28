@@ -956,8 +956,10 @@ do-- function freshPlayerPosition(sudden)
         if alive then
             for i=1,#L do
                 if i==1 then
-                    if SETTING.portrait then-- WARNING: Brutly scaling up to 2x only for 1P, will cause many other visual issues.
-                        L[i][method](L[i],36,-260,2)
+                    if SETTING.portrait then
+                        -- Increased scale to 2.5x for better screen usage (from 2x)
+                        -- With gesture controls, no virtual buttons obstruct the view
+                        L[i][method](L[i],36,-260,2.5)
                     else
                         L[i][method](L[i],unpack(posList['main']))
                     end
