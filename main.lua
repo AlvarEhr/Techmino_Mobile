@@ -445,14 +445,19 @@ do
     if SETTING.locale=='zh_full' then SETTING.locale='zh' end
     if SETTING.vocPack=='rin' then SETTING.vocPack='miku' end
     if SETTING.msaa>4 then SETTING.msaa=4 end
-    -- Migrate to gesture controls on mobile (new feature)
-    -- Auto-disable virtual buttons when gesture mode is enabled
+    -- Migrate to gesture controls and portrait mode on mobile (new features)
     if MOBILE then
+        -- Enable portrait mode by default on mobile
+        if SETTING.portrait==false then
+            SETTING.portrait=true
+        end
+        -- Enable gesture controls by default on mobile
         if SETTING.gestureMode==nil then
             SETTING.gestureMode=true
         end
+        -- Auto-disable virtual buttons when gesture mode is enabled
         if SETTING.gestureMode and SETTING.VKSwitch then
-            SETTING.VKSwitch=false  -- Disable virtual buttons when using gestures
+            SETTING.VKSwitch=false
         end
     end
     if RANKS.infinite then RANKS.infinite=0 end

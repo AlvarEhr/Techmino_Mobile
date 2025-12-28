@@ -206,7 +206,8 @@ function scene.enter()
 
     replaying=GAME.replaying
     noKey=replaying
-    noTouch=not SETTING.VKSwitch or replaying
+    -- Only disable touch if BOTH VKSwitch and gestureMode are off (no input method)
+    noTouch=(not SETTING.VKSwitch and not SETTING.gestureMode) or replaying
 
     if SCN.prev~='depause' and SCN.prev~='pause' then
         trigGameRate,gameRate=0,1

@@ -957,10 +957,9 @@ do-- function freshPlayerPosition(sudden)
             for i=1,#L do
                 if i==1 then
                     if SETTING.portrait then
-                        -- Optimized scale for portrait mode
-                        -- 2.6x = 780px wide, 1560px tall
-                        -- Balanced size that fills screen well without being too large
-                        L[i][method](L[i],36,-200,2.6)
+                        -- Original scale for portrait mode (reverted from larger sizes)
+                        -- 2x = 600px wide, 1200px tall - ensures UI elements visible
+                        L[i][method](L[i],36,-260,2)
                     else
                         L[i][method](L[i],unpack(posList['main']))
                     end

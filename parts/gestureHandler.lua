@@ -131,7 +131,7 @@ function GESTURE.touchMove(x, y, dx, dy, id, player)
                     gesture.activeActions.moveLeft = true
                 end
                 -- Call movement if finger moved left this frame (moves one cell)
-                if lastDX < -8 then  -- Moved at least 8px left since last move
+                if lastDX < -5 then  -- Moved at least 5px left - more responsive!
                     player:act_moveLeft()  -- Move one cell left
                     gesture.lastX = gesture.currentX  -- Reset for next move
                 end
@@ -142,7 +142,7 @@ function GESTURE.touchMove(x, y, dx, dy, id, player)
                     gesture.activeActions.moveRight = true
                 end
                 -- Call movement if finger moved right this frame (moves one cell)
-                if lastDX > 8 then  -- Moved at least 8px right since last move
+                if lastDX > 5 then  -- Moved at least 5px right - more responsive!
                     player:act_moveRight()  -- Move one cell right
                     gesture.lastX = gesture.currentX  -- Reset for next move
                 end
