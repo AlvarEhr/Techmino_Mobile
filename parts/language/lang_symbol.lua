@@ -246,6 +246,8 @@ return {
             key="=?",
             touch="_?",
             showVK="-- ?",
+            gestureMode="~~>",
+            maximizeMode="[++]",
             reTime="3-2-1",
             RS="''?",
             menuPos="←M→?",

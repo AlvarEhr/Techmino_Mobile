@@ -532,7 +532,8 @@ C. Tay cầm chơi game (Gamepad):
             key="Sửa bố cục bàn phím",
             touch="Sửa bố cục cảm ứng",
             showVK="Bật điều khiển bằng cảm ứng", -- Pull from Galaxy
-
+            gestureMode="Điều khiển cử chỉ",
+            maximizeMode="Phóng to sân chơi",
             reTime="Đếm ngược bắt đầu",
             RS="Hệ thống xoay gạch",
             menuPos="Vị trí nút Menu",

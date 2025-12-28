@@ -543,6 +543,8 @@ C. ゲームパッド
             key="キーコンフィグ",
             touch="タッチ設定",
             showVK="入力キーの可視化",
+            gestureMode="ジェスチャー操作",
+            maximizeMode="フィールド最大化",
             reTime="開始カウント",
             RS="回転法則",
             menuPos="メニューの位置",

@@ -782,6 +782,10 @@ function draw.norm(P,repMode)
     local FBN,FUP=P.fieldBeneath,P.fieldUp
     local camDY=FBN+FUP
     local t=TIME()
+
+    -- Check if maximize mode is active (only in portrait mode)
+    local maximizeMode = SETTING.maximizeMode and SETTING.portrait
+
     gc_push('transform')
         gc_translate(P.x,P.y)
         gc_scale(P.size)
@@ -789,14 +793,56 @@ function draw.norm(P,repMode)
         -- Draw username
         setFont(30)
         gc_setColor(GROUP_COLORS[P.group])
-        GC.mStr(P.username or USERS.getUsername(P.uid),300,-60)
+        if maximizeMode then
+            GC.mStr(P.username or USERS.getUsername(P.uid),150,-100)
+        else
+            GC.mStr(P.username or USERS.getUsername(P.uid),300,-60)
+        end
 
         -- Draw HUD
-        if ENV.nextCount>0 then _drawNext(P,repMode) end
-        if ENV.holdMode=='hold' and ENV.holdCount>0 then _drawHold(P.holdQueue,ENV.holdCount,P.holdTime,P.skinLib) end
-        if P.curMission then _drawMission(P.curMission,ENV.mission,ENV.missionKill) end
-        _drawDial(499,505,P.dropSpeed)
-        if P.life>0 then _drawLife(P.life) end
+        if maximizeMode then
+            -- Maximize mode: Move left-side elements to top, right-side to bottom
+            -- Hold queue: move from left (12,20) to top-left area
+            if ENV.holdMode=='hold' and ENV.holdCount>0 then
+                gc_push('transform')
+                gc_translate(-70, -140)  -- Shift up and left
+                _drawHold(P.holdQueue,ENV.holdCount,P.holdTime,P.skinLib)
+                gc_pop()
+            end
+            -- Next queue: move from right (488,20) to bottom area
+            if ENV.nextCount>0 then
+                gc_push('transform')
+                gc_translate(-200, 580)  -- Shift down and center
+                _drawNext(P,repMode)
+                gc_pop()
+            end
+            -- Mission: move from left to top-center
+            if P.curMission then
+                gc_push('transform')
+                gc_translate(100, -220)
+                _drawMission(P.curMission,ENV.mission,ENV.missionKill)
+                gc_pop()
+            end
+            -- Dial: move from right (499,505) to bottom-right
+            gc_push('transform')
+            gc_translate(-200, 80)
+            _drawDial(499,505,P.dropSpeed)
+            gc_pop()
+            -- Life: move from right (475,595) to bottom-right
+            if P.life>0 then
+                gc_push('transform')
+                gc_translate(-200, 60)
+                _drawLife(P.life)
+                gc_pop()
+            end
+        else
+            -- Normal mode: Original positions
+            if ENV.nextCount>0 then _drawNext(P,repMode) end
+            if ENV.holdMode=='hold' and ENV.holdCount>0 then _drawHold(P.holdQueue,ENV.holdCount,P.holdTime,P.skinLib) end
+            if P.curMission then _drawMission(P.curMission,ENV.mission,ENV.missionKill) end
+            _drawDial(499,505,P.dropSpeed)
+            if P.life>0 then _drawLife(P.life) end
+        end
 
         -- Field-related things
         _applyField(P)
@@ -973,16 +1019,34 @@ function draw.norm(P,repMode)
         -- Score & Time
         setFont(25)
         local tm=STRING.time(P.stat.time)
-        gc_setColor(0,0,0,.3)
-        gc_print(ceil(P.score1),18,509)
-        gc_print(tm,18,539)
-        gc_setColor(.97,.97,.92)
-        gc_print(ceil(P.score1),20,510)
-        gc_setColor(.85,.9,.97)
-        gc_print(tm,20,540)
+        if maximizeMode then
+            -- Move score/time to top-right area in maximize mode
+            gc_setColor(0,0,0,.3)
+            gc_print(ceil(P.score1),198,-89)
+            gc_print(tm,198,-59)
+            gc_setColor(.97,.97,.92)
+            gc_print(ceil(P.score1),200,-90)
+            gc_setColor(.85,.9,.97)
+            gc_print(tm,200,-60)
+        else
+            gc_setColor(0,0,0,.3)
+            gc_print(ceil(P.score1),18,509)
+            gc_print(tm,18,539)
+            gc_setColor(.97,.97,.92)
+            gc_print(ceil(P.score1),20,510)
+            gc_setColor(.85,.9,.97)
+            gc_print(tm,20,540)
+        end
 
         -- FinesseCombo
-        ;(P.type=='remote' and _drawFinesseCombo_remote or _drawFinesseCombo_norm)(P)
+        if maximizeMode then
+            gc_push('transform')
+            gc_translate(180, -610)  -- Move to top area
+            ;(P.type=='remote' and _drawFinesseCombo_remote or _drawFinesseCombo_norm)(P)
+            gc_pop()
+        else
+            ;(P.type=='remote' and _drawFinesseCombo_remote or _drawFinesseCombo_norm)(P)
+        end
 
         -- Mode informations
         for i=1,#ENV.mesDisp do

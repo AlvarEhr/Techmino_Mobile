@@ -537,6 +537,8 @@ C. Gamepad
             key="Key Mappings",
             touch="Touch Settings",
             showVK="Show Virtual Keys",
+            gestureMode="Gesture Controls",
+            maximizeMode="Maximize Field",
             reTime="Start Delay",
             RS="Rotation System",
             menuPos="Menu Button Pos.",

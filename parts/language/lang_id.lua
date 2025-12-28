@@ -499,6 +499,8 @@ return {
             key="Ubah Tindakan Tombol",
             touch="Pengaturan Sentuhan",
             showVK="Tunjuk Tombol Sentuh",
+            gestureMode="Kontrol Gerakan",
+            maximizeMode="Maksimalkan Lapangan",
             reTime="Tunda Mulai",
             RS="Sistem Putar",
             menuPos="Pos. Tombol Menu",

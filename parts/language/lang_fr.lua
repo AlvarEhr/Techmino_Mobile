@@ -474,6 +474,8 @@ return {
             key="Touches",
             touch="Boutons virtuels",
             showVK="Montrer les touches virtuelles",
+            gestureMode="Contrôles gestuels",
+            maximizeMode="Maximiser le terrain",
             reTime="Délai de démarrage",
             RS="Système de rotation",
             -- menuPos="Menu button pos.",

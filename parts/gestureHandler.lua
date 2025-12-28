@@ -6,16 +6,16 @@ local TIME=TIME
 -- Gesture detection thresholds
 local THRESHOLDS = {
     TAP_TIME = 0.2,              -- Max time for tap (seconds)
-    TAP_DISTANCE = 15,           -- Max movement for tap (pixels)
+    TAP_DISTANCE = 10,           -- Max movement for tap (pixels) - reduced for responsiveness
 
-    SWIPE_DISTANCE = 30,         -- Min distance to register as directional movement
+    SWIPE_DISTANCE = 20,         -- Min distance to register as directional movement
 
-    HARD_DROP_VELOCITY = 600,    -- Min downward velocity for hard drop (pixels/second)
+    HARD_DROP_VELOCITY = 800,    -- Min downward velocity for hard drop (pixels/second)
     SOFT_DROP_VELOCITY = 100,    -- Min downward velocity for soft drop (pixels/second)
-    HOLD_VELOCITY = 400,         -- Min upward velocity for hold (pixels/second)
+    HOLD_VELOCITY = 500,         -- Min upward velocity for hold (pixels/second)
 
     -- Direct displacement-based movement: pixels of finger movement = 1 cell
-    PIXELS_PER_CELL = 40,        -- Finger moves 40px = piece moves 1 cell
+    PIXELS_PER_CELL = 20,        -- Finger moves 20px = piece moves 1 cell (more responsive)
 }
 
 -- Gesture state tracking
@@ -33,9 +33,9 @@ local gesture = {
     velocityX = 0,
     velocityY = 0,
 
-    -- Direct displacement tracking for horizontal movement
-    -- This tracks how many "cell moves" have been consumed from the finger displacement
-    horizontalCellsMoved = 0,
+    -- Accumulated horizontal movement buffer (in pixels)
+    -- When this exceeds PIXELS_PER_CELL, we move the piece and subtract
+    horizontalBuffer = 0,
 
     -- Track which actions are currently active (for soft drop only now)
     activeActions = {
@@ -64,7 +64,7 @@ function GESTURE.touchDown(x, y, id)
     gesture.lastTime = now
     gesture.velocityX = 0
     gesture.velocityY = 0
-    gesture.horizontalCellsMoved = 0
+    gesture.horizontalBuffer = 0
     gesture.instantActionFired = false
 end
 
@@ -88,7 +88,7 @@ function GESTURE.touchMove(x, y, dx, dy, id, player)
     gesture.velocityX = dx / dt
     gesture.velocityY = dy / dt
 
-    -- Calculate total displacement from start
+    -- Calculate total displacement from start (for tap detection and instant actions)
     local totalDX = x - gesture.startX
     local totalDY = y - gesture.startY
     local totalDistance = math.sqrt(totalDX * totalDX + totalDY * totalDY)
@@ -116,20 +116,18 @@ function GESTURE.touchMove(x, y, dx, dy, id, player)
 
     -- Only process movement if we've moved beyond the tap threshold
     if totalDistance > THRESHOLDS.TAP_DISTANCE then
-        -- Direct displacement-based horizontal movement
-        -- Calculate how many cells the finger displacement corresponds to
-        local targetCells = math.floor(totalDX / THRESHOLDS.PIXELS_PER_CELL)
+        -- Continuous buffer-based horizontal movement
+        -- Add the frame's horizontal movement to the buffer
+        gesture.horizontalBuffer = gesture.horizontalBuffer + dx
 
-        -- Move piece to match finger position
-        while gesture.horizontalCellsMoved < targetCells do
-            -- Need to move right
+        -- Process moves when buffer exceeds threshold
+        while gesture.horizontalBuffer >= THRESHOLDS.PIXELS_PER_CELL do
             player:act_moveRight()
-            gesture.horizontalCellsMoved = gesture.horizontalCellsMoved + 1
+            gesture.horizontalBuffer = gesture.horizontalBuffer - THRESHOLDS.PIXELS_PER_CELL
         end
-        while gesture.horizontalCellsMoved > targetCells do
-            -- Need to move left
+        while gesture.horizontalBuffer <= -THRESHOLDS.PIXELS_PER_CELL do
             player:act_moveLeft()
-            gesture.horizontalCellsMoved = gesture.horizontalCellsMoved - 1
+            gesture.horizontalBuffer = gesture.horizontalBuffer + THRESHOLDS.PIXELS_PER_CELL
         end
 
         -- Soft drop: use pressKey for continuous action (vertical movement)

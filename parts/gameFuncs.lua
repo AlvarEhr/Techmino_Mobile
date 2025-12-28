@@ -957,9 +957,16 @@ do-- function freshPlayerPosition(sudden)
             for i=1,#L do
                 if i==1 then
                     if SETTING.portrait then
-                        -- Increased scale to 2.5x for better screen usage (from 2x)
-                        -- With gesture controls, no virtual buttons obstruct the view
-                        L[i][method](L[i],36,-260,2.5)
+                        if SETTING.maximizeMode then
+                            -- Maximize mode: UI moved to top/bottom, center the playfield
+                            -- Scale 2.0x for better fit with rearranged UI
+                            L[i][method](L[i],60,-180,2.0)
+                        else
+                            -- Normal portrait mode
+                            -- Increased scale to 2.5x for better screen usage (from 2x)
+                            -- With gesture controls, no virtual buttons obstruct the view
+                            L[i][method](L[i],36,-260,2.5)
+                        end
                     else
                         L[i][method](L[i],unpack(posList['main']))
                     end

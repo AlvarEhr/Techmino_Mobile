@@ -498,6 +498,8 @@ return {
             key="Teclas",
             touch="Controles Táctiles",
             showVK="Mostrar Tec. Virtual",
+            gestureMode="Controles Gestuales",
+            maximizeMode="Maximizar Campo",
             reTime="Retraso de Inicio",
             RS="Sistema de Rotación",
             menuPos="Pos. del Botón de Menú",

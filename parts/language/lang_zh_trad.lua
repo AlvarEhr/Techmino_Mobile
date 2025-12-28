@@ -499,6 +499,8 @@ return {
             key="鍵位設定",
             touch="觸控設定",
             showVK="顯示虛擬擊鍵",
+            gestureMode="手勢控制",
+            maximizeMode="最大化遊戲區",
             reTime="開局等待時間",
             RS="旋轉系統",
             menuPos="菜單按鈕位置",

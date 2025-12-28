@@ -487,6 +487,8 @@ return {
             key="Map. teclas",
             touch="Config. toque",
             showVK="Mostrar tecla virtual",
+            gestureMode="Controles Gestuais",
+            maximizeMode="Maximizar Campo",
             reTime="Demora iniciação",
             RS="Sistema de rotação",
             -- menuPos="Menu button pos.",

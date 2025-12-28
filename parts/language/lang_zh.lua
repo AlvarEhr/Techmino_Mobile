@@ -528,6 +528,8 @@ return {
             key="键位设置…",
             touch="触屏设置…",
             showVK="显示虚拟按键",
+            gestureMode="手势控制",
+            maximizeMode="最大化游戏区",
             reTime="开局等待时间:",
             RS="旋转系统",
             menuPos="菜单按钮位置",

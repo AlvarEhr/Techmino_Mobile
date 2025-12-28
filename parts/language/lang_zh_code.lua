@@ -447,6 +447,8 @@ return {
             key="Set.Key();",
             touch="Set.Touch();",
             showVK="Set.ShowVK",
+            gestureMode="Set.GestureMode",
+            maximizeMode="Set.MaximizeMode",
             reTime="Set.ReTime=",
             RS="Set.RS",
             menuPos="Set.MenuPos",

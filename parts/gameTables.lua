@@ -694,6 +694,7 @@ do-- Userdata tables
 
         -- Gesture controls (mobile-friendly touch controls)
         gestureMode=MOBILE,-- Enable gesture-based touch controls (swipe to move, tap to rotate)
+        maximizeMode=false,-- Maximize playfield in portrait mode (moves UI to top/bottom)
     }
     KEY_MAP={-- Key setting
         keyboard={
