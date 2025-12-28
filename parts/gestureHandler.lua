@@ -10,9 +10,9 @@ local THRESHOLDS = {
 
     SWIPE_DISTANCE = 20,         -- Min distance to register as directional movement
 
-    HARD_DROP_VELOCITY = 800,    -- Min downward velocity for hard drop (pixels/second)
+    HARD_DROP_VELOCITY = 600,    -- Min downward velocity for hard drop (pixels/second)
     SOFT_DROP_VELOCITY = 100,    -- Min downward velocity for soft drop (pixels/second)
-    HOLD_VELOCITY = 500,         -- Min upward velocity for hold (pixels/second)
+    HOLD_VELOCITY = 400,         -- Min upward velocity for hold (pixels/second)
 
     -- Direct displacement-based movement: pixels of finger movement = 1 cell
     PIXELS_PER_CELL = 20,        -- Finger moves 20px = piece moves 1 cell (more responsive)
