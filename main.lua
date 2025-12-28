@@ -445,6 +445,11 @@ do
     if SETTING.locale=='zh_full' then SETTING.locale='zh' end
     if SETTING.vocPack=='rin' then SETTING.vocPack='miku' end
     if SETTING.msaa>4 then SETTING.msaa=4 end
+    -- Migrate to gesture controls on mobile (new feature)
+    if MOBILE and SETTING.gestureMode==nil then
+        SETTING.gestureMode=true
+        SETTING.VKSwitch=false  -- Disable virtual buttons when using gestures
+    end
     if RANKS.infinite then RANKS.infinite=0 end
     if RANKS.infinite_dig then RANKS.infinite_dig=0 end
     if not RANKS.sprint_10l then RANKS.sprint_10l=0 end
