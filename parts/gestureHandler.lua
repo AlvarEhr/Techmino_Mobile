@@ -14,7 +14,8 @@ local THRESHOLDS = {
     SOFT_DROP_VELOCITY = 100,    -- Min downward velocity for soft drop (pixels/second)
     HOLD_VELOCITY = 400,         -- Min upward velocity for hold (pixels/second)
 
-    HORIZONTAL_THRESHOLD = 20,   -- Min horizontal movement for left/right
+    -- Direct displacement-based movement: pixels of finger movement = 1 cell
+    PIXELS_PER_CELL = 40,        -- Finger moves 40px = piece moves 1 cell
 }
 
 -- Gesture state tracking
@@ -32,10 +33,12 @@ local gesture = {
     velocityX = 0,
     velocityY = 0,
 
-    -- Track which actions are currently active (for continuous movement)
+    -- Direct displacement tracking for horizontal movement
+    -- This tracks how many "cell moves" have been consumed from the finger displacement
+    horizontalCellsMoved = 0,
+
+    -- Track which actions are currently active (for soft drop only now)
     activeActions = {
-        moveLeft = false,
-        moveRight = false,
         softDrop = false,
     },
 
@@ -61,6 +64,7 @@ function GESTURE.touchDown(x, y, id)
     gesture.lastTime = now
     gesture.velocityX = 0
     gesture.velocityY = 0
+    gesture.horizontalCellsMoved = 0
     gesture.instantActionFired = false
 end
 
@@ -110,36 +114,36 @@ function GESTURE.touchMove(x, y, dx, dy, id, player)
         end
     end
 
-    -- Continuous actions (movement, soft drop)
-    -- Only activate if we've moved beyond the tap threshold
+    -- Only process movement if we've moved beyond the tap threshold
     if totalDistance > THRESHOLDS.TAP_DISTANCE then
-        -- Horizontal movement (left/right)
-        if math.abs(dx) > math.abs(dy) then
-            -- Primarily horizontal movement
-            if dx < -THRESHOLDS.HORIZONTAL_THRESHOLD then
-                -- Moving left
-                if not gesture.activeActions.moveLeft then
-                    GESTURE._releaseAll(player)
-                    player:pressKey(1)  -- moveLeft
-                    gesture.activeActions.moveLeft = true
-                end
-            elseif dx > THRESHOLDS.HORIZONTAL_THRESHOLD then
-                -- Moving right
-                if not gesture.activeActions.moveRight then
-                    GESTURE._releaseAll(player)
-                    player:pressKey(2)  -- moveRight
-                    gesture.activeActions.moveRight = true
-                end
+        -- Direct displacement-based horizontal movement
+        -- Calculate how many cells the finger displacement corresponds to
+        local targetCells = math.floor(totalDX / THRESHOLDS.PIXELS_PER_CELL)
+
+        -- Move piece to match finger position
+        while gesture.horizontalCellsMoved < targetCells do
+            -- Need to move right
+            player:act_moveRight()
+            gesture.horizontalCellsMoved = gesture.horizontalCellsMoved + 1
+        end
+        while gesture.horizontalCellsMoved > targetCells do
+            -- Need to move left
+            player:act_moveLeft()
+            gesture.horizontalCellsMoved = gesture.horizontalCellsMoved - 1
+        end
+
+        -- Soft drop: use pressKey for continuous action (vertical movement)
+        -- Only activate soft drop if moving primarily downward
+        if math.abs(totalDY) > math.abs(totalDX) and gesture.velocityY > THRESHOLDS.SOFT_DROP_VELOCITY then
+            if not gesture.activeActions.softDrop then
+                player:pressKey(7)  -- softDrop
+                gesture.activeActions.softDrop = true
             end
         else
-            -- Primarily vertical movement
-            -- Slow downward movement = Soft drop
-            if gesture.velocityY > THRESHOLDS.SOFT_DROP_VELOCITY then
-                if not gesture.activeActions.softDrop then
-                    GESTURE._releaseAll(player)
-                    player:pressKey(7)  -- softDrop
-                    gesture.activeActions.softDrop = true
-                end
+            -- Release soft drop if not moving down anymore
+            if gesture.activeActions.softDrop then
+                player:releaseKey(7)
+                gesture.activeActions.softDrop = false
             end
         end
     end
@@ -179,14 +183,8 @@ end
 
 -- Internal: Release all currently active continuous actions
 function GESTURE._releaseAll(player)
-    if gesture.activeActions.moveLeft then
-        player:releaseKey(1)
-        gesture.activeActions.moveLeft = false
-    end
-    if gesture.activeActions.moveRight then
-        player:releaseKey(2)
-        gesture.activeActions.moveRight = false
-    end
+    -- Only soft drop uses pressKey/releaseKey now
+    -- Horizontal movement uses direct act_moveLeft/Right calls
     if gesture.activeActions.softDrop then
         player:releaseKey(7)
         gesture.activeActions.softDrop = false
