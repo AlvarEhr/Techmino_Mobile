@@ -119,30 +119,32 @@ function GESTURE.touchMove(x, y, dx, dy, id, player)
     -- Continuous actions (movement, soft drop)
     -- Only activate if we've moved beyond the tap threshold
     if totalDistance > THRESHOLDS.TAP_DISTANCE and not gesture.instantActionFired then
-        -- Horizontal movement (left/right) - use instant movement for fluid response
+        -- Horizontal movement (left/right) - fluid tracking without DAS delay
         if isHorizontal then
             -- Track how much we've moved since last action
             local lastDX = gesture.currentX - gesture.lastX
 
             if totalDX < -THRESHOLDS.MOVE_MIN_DISTANCE then
-                -- Moving left - use instant movement for fluid tracking
+                -- Moving left - call movement every few pixels for fluid feel
                 if not gesture.activeActions.moveLeft then
                     GESTURE._releaseAll(player)
                     gesture.activeActions.moveLeft = true
                 end
-                -- Call instant left movement if finger moved left this frame
-                if lastDX < -5 then  -- Moved at least 5px left this frame
-                    player:act_insLeft()  -- Instant left (no DAS delay)
+                -- Call movement if finger moved left this frame (moves one cell)
+                if lastDX < -8 then  -- Moved at least 8px left since last move
+                    player:act_moveLeft()  -- Move one cell left
+                    gesture.lastX = gesture.currentX  -- Reset for next move
                 end
             elseif totalDX > THRESHOLDS.MOVE_MIN_DISTANCE then
-                -- Moving right - use instant movement for fluid tracking
+                -- Moving right - call movement every few pixels for fluid feel
                 if not gesture.activeActions.moveRight then
                     GESTURE._releaseAll(player)
                     gesture.activeActions.moveRight = true
                 end
-                -- Call instant right movement if finger moved right this frame
-                if lastDX > 5 then  -- Moved at least 5px right this frame
-                    player:act_insRight()  -- Instant right (no DAS delay)
+                -- Call movement if finger moved right this frame (moves one cell)
+                if lastDX > 8 then  -- Moved at least 8px right since last move
+                    player:act_moveRight()  -- Move one cell right
+                    gesture.lastX = gesture.currentX  -- Reset for next move
                 end
             end
         -- Vertical movement (soft drop)

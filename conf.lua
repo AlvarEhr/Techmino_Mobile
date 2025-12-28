@@ -24,7 +24,13 @@ function love.conf(t)
         if fileData then
             msaa=tonumber(fileData:match('"msaa":(%d+)')) or 0;
             msaa=msaa==0 and 0 or 2*msaa
-            portrait=MOBILE and fileData:find('"portrait":true') and true
+            -- Load portrait setting from file, or default to MOBILE
+            if fileData:find('"portrait":true') then
+                portrait = true
+            elseif fileData:find('"portrait":false') then
+                portrait = false
+            -- else: keep default (MOBILE)
+            end
         end
     end
 
