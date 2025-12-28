@@ -446,9 +446,14 @@ do
     if SETTING.vocPack=='rin' then SETTING.vocPack='miku' end
     if SETTING.msaa>4 then SETTING.msaa=4 end
     -- Migrate to gesture controls on mobile (new feature)
-    if MOBILE and SETTING.gestureMode==nil then
-        SETTING.gestureMode=true
-        SETTING.VKSwitch=false  -- Disable virtual buttons when using gestures
+    -- Auto-disable virtual buttons when gesture mode is enabled
+    if MOBILE then
+        if SETTING.gestureMode==nil then
+            SETTING.gestureMode=true
+        end
+        if SETTING.gestureMode and SETTING.VKSwitch then
+            SETTING.VKSwitch=false  -- Disable virtual buttons when using gestures
+        end
     end
     if RANKS.infinite then RANKS.infinite=0 end
     if RANKS.infinite_dig then RANKS.infinite_dig=0 end

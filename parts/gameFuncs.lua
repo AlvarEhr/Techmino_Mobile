@@ -957,11 +957,10 @@ do-- function freshPlayerPosition(sudden)
             for i=1,#L do
                 if i==1 then
                     if SETTING.portrait then
-                        -- Increased scale to 2.3x for better screen usage (from 2x)
-                        -- 2.3x = 690px wide (fits 720px screen with 30px margin)
-                        -- Adjusted x=10 for better centering (was 36)
-                        -- With gesture controls, no virtual buttons obstruct the view
-                        L[i][method](L[i],10,-260,2.3)
+                        -- Significantly increased scale for modern tall screens
+                        -- 3.2x = 960px wide, 1920px tall - fills screen much better
+                        -- Adjusted positioning to center properly
+                        L[i][method](L[i],-120,-140,3.2)
                     else
                         L[i][method](L[i],unpack(posList['main']))
                     end
