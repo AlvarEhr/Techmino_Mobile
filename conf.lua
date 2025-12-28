@@ -15,7 +15,7 @@ end
 function love.conf(t)
     local identity='Techmino'
     local msaa=0
-    local portrait=false
+    local portrait=MOBILE  -- Default to portrait on mobile devices
 
     local fs=love.filesystem
     fs.setIdentity(identity)

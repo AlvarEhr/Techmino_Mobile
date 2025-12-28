@@ -691,6 +691,9 @@ do-- Userdata tables
         VKCurW=.4,-- Cur-Pos Weight
         VKIcon=true,-- If disp icon
         VKAlpha=.3,
+
+        -- Gesture controls (mobile-friendly touch controls)
+        gestureMode=MOBILE,-- Enable gesture-based touch controls (swipe to move, tap to rotate)
     }
     KEY_MAP={-- Key setting
         keyboard={

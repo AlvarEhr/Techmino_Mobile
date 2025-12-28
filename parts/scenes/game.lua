@@ -6,6 +6,7 @@ local gc_circle,gc_print=GC.circle,GC.print
 local SCR,VK=SCR,VK
 local GAME,PLAYERS=GAME,PLAYERS
 local setFont,mStr=FONT.set,GC.mStr
+local GESTURE=require'parts/gestureHandler'
 
 local noTouch,noKey=false,false
 local touchMoveLastFrame=false
@@ -227,9 +228,16 @@ function scene.enter()
 end
 
 scene.mouseDown=NULL
-function scene.touchDown(x,y)
+function scene.touchDown(x,y,id)
     if noTouch then return end
 
+    -- Try gesture system first if enabled
+    if SETTING.gestureMode then
+        GESTURE.touchDown(x,y,id)
+        return
+    end
+
+    -- Fall back to virtual button system
     local t=VK.on(x,y)
     if t then
         PLAYERS[1]:pressKey(t)
@@ -238,17 +246,33 @@ function scene.touchDown(x,y)
         _fullSkipCheck()
     end
 end
-function scene.touchUp(x,y)
+function scene.touchUp(x,y,id)
     if noTouch then return end
 
+    -- Handle gesture system if enabled
+    if SETTING.gestureMode then
+        GESTURE.touchUp(x,y,id,PLAYERS[1])
+        return
+    end
+
+    -- Fall back to virtual button system
     local n=VK.on(x,y)
     if n then
         PLAYERS[1]:releaseKey(n)
         VK.release(n)
     end
 end
-function scene.touchMove()
-    if noTouch or touchMoveLastFrame then return end
+function scene.touchMove(x,y,dx,dy,id)
+    if noTouch then return end
+
+    -- Handle gesture system if enabled
+    if SETTING.gestureMode then
+        GESTURE.touchMove(x,y,dx,dy,id,PLAYERS[1])
+        return
+    end
+
+    -- Fall back to virtual button system (original implementation)
+    if touchMoveLastFrame then return end
     touchMoveLastFrame=true
 
     local L=tc.getTouches()
