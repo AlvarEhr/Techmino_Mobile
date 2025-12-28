@@ -438,8 +438,10 @@ function scene.draw()
         PLAYERS[p]:draw(repMode)
     end
 
-    -- Virtual keys
-    VK.draw()
+    -- Virtual keys (hide when gesture mode is active)
+    if not SETTING.gestureMode then
+        VK.draw()
+    end
 
     -- Attacking & Being attacked
     if PLAYERS[1].gameEnv.layout=='royale' then

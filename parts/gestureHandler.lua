@@ -18,7 +18,8 @@ local THRESHOLDS = {
     HOLD_VELOCITY = 1500,        -- Min upward velocity for hold (pixels/second)
     HOLD_MIN_DISTANCE = 60,      -- Min distance for hold swipe
 
-    MOVE_MIN_DISTANCE = 30,      -- Min horizontal distance to start moving
+    MOVE_MIN_DISTANCE = 8,       -- Min horizontal distance to start moving (reduced for better sensitivity)
+    MOVE_STEP = 15,              -- Pixels to move before triggering next cell movement
 }
 
 -- Gesture state tracking
@@ -119,32 +120,21 @@ function GESTURE.touchMove(x, y, dx, dy, id, player)
     -- Continuous actions (movement, soft drop)
     -- Only activate if we've moved beyond the tap threshold
     if totalDistance > THRESHOLDS.TAP_DISTANCE and not gesture.instantActionFired then
-        -- Horizontal movement (left/right) - fluid tracking without DAS delay
+        -- Horizontal movement (left/right) - use press/release for natural DAS behavior
         if isHorizontal then
-            -- Track how much we've moved since last action
-            local lastDX = gesture.currentX - gesture.lastX
-
             if totalDX < -THRESHOLDS.MOVE_MIN_DISTANCE then
-                -- Moving left - call movement every few pixels for fluid feel
+                -- Moving left - activate left movement
                 if not gesture.activeActions.moveLeft then
                     GESTURE._releaseAll(player)
+                    player:pressKey(1)  -- moveLeft key - uses game's natural DAS/ARR
                     gesture.activeActions.moveLeft = true
                 end
-                -- Call movement if finger moved left this frame (moves one cell)
-                if lastDX < -5 then  -- Moved at least 5px left - more responsive!
-                    player:act_moveLeft()  -- Move one cell left
-                    gesture.lastX = gesture.currentX  -- Reset for next move
-                end
             elseif totalDX > THRESHOLDS.MOVE_MIN_DISTANCE then
-                -- Moving right - call movement every few pixels for fluid feel
+                -- Moving right - activate right movement
                 if not gesture.activeActions.moveRight then
                     GESTURE._releaseAll(player)
+                    player:pressKey(2)  -- moveRight key - uses game's natural DAS/ARR
                     gesture.activeActions.moveRight = true
-                end
-                -- Call movement if finger moved right this frame (moves one cell)
-                if lastDX > 5 then  -- Moved at least 5px right - more responsive!
-                    player:act_moveRight()  -- Move one cell right
-                    gesture.lastX = gesture.currentX  -- Reset for next move
                 end
             end
         -- Vertical movement (soft drop)
