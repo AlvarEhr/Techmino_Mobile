@@ -6,15 +6,19 @@ local TIME=TIME
 -- Gesture detection thresholds
 local THRESHOLDS = {
     TAP_TIME = 0.2,              -- Max time for tap (seconds)
-    TAP_DISTANCE = 15,           -- Max movement for tap (pixels)
+    TAP_DISTANCE = 20,           -- Max movement for tap (pixels)
 
-    SWIPE_DISTANCE = 30,         -- Min distance to register as directional movement
+    SWIPE_MIN_DISTANCE = 50,     -- Min distance to register as swipe gesture
 
-    HARD_DROP_VELOCITY = 600,    -- Min downward velocity for hard drop (pixels/second)
-    SOFT_DROP_VELOCITY = 100,    -- Min downward velocity for soft drop (pixels/second)
-    HOLD_VELOCITY = 400,         -- Min upward velocity for hold (pixels/second)
+    HARD_DROP_VELOCITY = 2000,   -- Min downward velocity for hard drop (pixels/second)
+    HARD_DROP_MIN_DISTANCE = 80, -- Min distance for hard drop swipe
 
-    HORIZONTAL_THRESHOLD = 20,   -- Min horizontal movement for left/right
+    SOFT_DROP_VELOCITY = 300,    -- Min downward velocity for soft drop (pixels/second)
+
+    HOLD_VELOCITY = 1500,        -- Min upward velocity for hold (pixels/second)
+    HOLD_MIN_DISTANCE = 60,      -- Min distance for hold swipe
+
+    MOVE_MIN_DISTANCE = 30,      -- Min horizontal distance to start moving
 }
 
 -- Gesture state tracking
@@ -71,28 +75,30 @@ function GESTURE.touchMove(x, y, dx, dy, id, player)
     end
 
     local now = TIME()
-    local dt = now - gesture.lastTime
-
-    -- Avoid division by zero
-    if dt < 0.001 then dt = 0.001 end
-
-    -- Update position and velocity
     gesture.currentX = x
     gesture.currentY = y
 
-    -- Calculate velocity (pixels per second)
-    gesture.velocityX = dx / dt
-    gesture.velocityY = dy / dt
-
-    -- Calculate total displacement from start
+    -- Calculate total displacement from start (overall gesture direction)
     local totalDX = x - gesture.startX
     local totalDY = y - gesture.startY
     local totalDistance = math.sqrt(totalDX * totalDX + totalDY * totalDY)
+    local totalTime = now - gesture.startTime
+
+    -- Avoid division by zero for velocity calculation
+    if totalTime < 0.001 then totalTime = 0.001 end
+
+    -- Calculate average velocity over entire gesture (more stable than per-frame)
+    local avgVelocityX = totalDX / totalTime
+    local avgVelocityY = totalDY / totalTime
+
+    -- Determine primary gesture direction based on total displacement
+    local isHorizontal = math.abs(totalDX) > math.abs(totalDY)
+    local isVertical = math.abs(totalDY) > math.abs(totalDX)
 
     -- Detect instant actions (hard drop, hold) - only fire once per gesture
-    if not gesture.instantActionFired and totalDistance > THRESHOLDS.SWIPE_DISTANCE then
+    if not gesture.instantActionFired and totalDistance > THRESHOLDS.SWIPE_MIN_DISTANCE then
         -- Fast downward swipe = Hard drop
-        if gesture.velocityY > THRESHOLDS.HARD_DROP_VELOCITY then
+        if isVertical and totalDY > THRESHOLDS.HARD_DROP_MIN_DISTANCE and avgVelocityY > THRESHOLDS.HARD_DROP_VELOCITY then
             player:act_hardDrop()
             gesture.instantActionFired = true
             GESTURE._releaseAll(player)
@@ -101,7 +107,7 @@ function GESTURE.touchMove(x, y, dx, dy, id, player)
         end
 
         -- Fast upward swipe = Hold
-        if gesture.velocityY < -THRESHOLDS.HOLD_VELOCITY then
+        if isVertical and totalDY < -THRESHOLDS.HOLD_MIN_DISTANCE and avgVelocityY < -THRESHOLDS.HOLD_VELOCITY then
             player:act_hold()
             gesture.instantActionFired = true
             GESTURE._releaseAll(player)
@@ -112,18 +118,17 @@ function GESTURE.touchMove(x, y, dx, dy, id, player)
 
     -- Continuous actions (movement, soft drop)
     -- Only activate if we've moved beyond the tap threshold
-    if totalDistance > THRESHOLDS.TAP_DISTANCE then
+    if totalDistance > THRESHOLDS.TAP_DISTANCE and not gesture.instantActionFired then
         -- Horizontal movement (left/right)
-        if math.abs(dx) > math.abs(dy) then
-            -- Primarily horizontal movement
-            if dx < -THRESHOLDS.HORIZONTAL_THRESHOLD then
+        if isHorizontal then
+            if totalDX < -THRESHOLDS.MOVE_MIN_DISTANCE then
                 -- Moving left
                 if not gesture.activeActions.moveLeft then
                     GESTURE._releaseAll(player)
                     player:pressKey(1)  -- moveLeft
                     gesture.activeActions.moveLeft = true
                 end
-            elseif dx > THRESHOLDS.HORIZONTAL_THRESHOLD then
+            elseif totalDX > THRESHOLDS.MOVE_MIN_DISTANCE then
                 -- Moving right
                 if not gesture.activeActions.moveRight then
                     GESTURE._releaseAll(player)
@@ -131,10 +136,10 @@ function GESTURE.touchMove(x, y, dx, dy, id, player)
                     gesture.activeActions.moveRight = true
                 end
             end
-        else
-            -- Primarily vertical movement
-            -- Slow downward movement = Soft drop
-            if gesture.velocityY > THRESHOLDS.SOFT_DROP_VELOCITY then
+        -- Vertical movement (soft drop)
+        elseif isVertical and totalDY > 0 then
+            -- Downward movement = Soft drop (continuous while moving)
+            if avgVelocityY > THRESHOLDS.SOFT_DROP_VELOCITY then
                 if not gesture.activeActions.softDrop then
                     GESTURE._releaseAll(player)
                     player:pressKey(7)  -- softDrop
