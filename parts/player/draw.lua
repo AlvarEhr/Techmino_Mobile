@@ -1105,10 +1105,12 @@ function draw.norm(P,repMode)
         local drawFinesseCombo = P.type=='remote' and _drawFinesseCombo_remote or _drawFinesseCombo_norm
         drawFinesseCombo(P)
 
-        -- Mode informations
-        for i=1,#ENV.mesDisp do
-            gc_setColor(.97,.97,.97)
-            ENV.mesDisp[i](P,repMode)
+        -- Mode informations (skip in maximize mode to avoid clutter)
+        if not maximizeMode then
+            for i=1,#ENV.mesDisp do
+                gc_setColor(.97,.97,.97)
+                ENV.mesDisp[i](P,repMode)
+            end
         end
 
         -- Torikan miss amount

@@ -16,11 +16,11 @@ local THRESHOLDS = {
 }
 
 -- Calculate pixels per cell from sensitivity setting
--- Sensitivity 10 = 40 px/cell (low sensitivity, big swipes needed)
--- Sensitivity 30 = 20 px/cell (default)
--- Sensitivity 40 = 10 px/cell (high sensitivity, small swipes work)
+-- Sensitivity 1 = 54 px/cell (lowest sensitivity, big swipes needed)
+-- Sensitivity 25 = 30 px/cell (default)
+-- Sensitivity 50 = 5 px/cell (highest sensitivity, small swipes work)
 local function getPixelsPerCell()
-    return 50 - (SETTING.gestureSensitivity or 30)
+    return 55 - (SETTING.gestureSensitivity or 25)
 end
 
 -- Gesture state tracking
