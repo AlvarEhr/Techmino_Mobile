@@ -104,7 +104,7 @@ scene.widgetList={
 
     -- Gesture controls (mobile) - positioned below other controls
     WIDGET.newSwitch{name='gestureMode',x=1100,y=360,lim=300,                    disp=SETval('gestureMode'),code=SETrev('gestureMode'),hideF=function() return not MOBILE end},
-    WIDGET.newSlider{name='gestureSens',x=250,y=680,w=500,lim=230,axis={1,50,1}, disp=SETval('gestureSensitivity'),code=SETsto('gestureSensitivity'),show=SETval('gestureSensitivity'),hideF=function() return not MOBILE or not SETTING.gestureMode end},
+    WIDGET.newSlider{name='gestureSens',x=250,y=680,w=500,lim=230,axis={1,100,1}, disp=SETval('gestureSensitivity'),code=SETsto('gestureSensitivity'),show=SETval('gestureSensitivity'),hideF=function() return not MOBILE or not SETTING.gestureMode end},
 
     WIDGET.newButton{name='reset',  x=160,    y=750,w=200,h=100,color='lR',font=40,
         code=function()
