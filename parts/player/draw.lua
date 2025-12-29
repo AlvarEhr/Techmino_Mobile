@@ -1039,13 +1039,14 @@ function draw.norm(P,repMode)
         end
 
         -- FinesseCombo
+        local drawFinesseCombo = P.type=='remote' and _drawFinesseCombo_remote or _drawFinesseCombo_norm
         if maximizeMode then
             gc_push('transform')
             gc_translate(180, -610)  -- Move to top area
-            ;(P.type=='remote' and _drawFinesseCombo_remote or _drawFinesseCombo_norm)(P)
+            drawFinesseCombo(P)
             gc_pop()
         else
-            ;(P.type=='remote' and _drawFinesseCombo_remote or _drawFinesseCombo_norm)(P)
+            drawFinesseCombo(P)
         end
 
         -- Mode informations
