@@ -958,31 +958,26 @@ do-- function freshPlayerPosition(sudden)
                 if i==1 then
                     if SETTING.portrait then
                         if SETTING.maximizeMode then
-                            -- Maximize mode: Dynamic scaling to maximize playfield
-                            -- Calculate scale based on screen width (with margin)
+                            -- Maximize mode: Scale playfield to fit width, with UI at top/bottom
                             local screenW, screenH = SCR.w, SCR.h
-                            local margin = 20
                             local playfieldW = 300  -- base playfield width in units
-                            local playfieldH = 600  -- visible playfield height in units
 
-                            -- Scale to fit width (primary constraint)
+                            -- Scale to fit screen width with small margin
+                            local margin = 30
                             local scale = (screenW - margin * 2) / playfieldW
 
-                            -- Check height constraint (leave room for UI at top/bottom)
-                            local topUI = 90    -- space for hold piece
-                            local bottomUI = 90 -- space for horizontal next queue
-                            local availableH = screenH - topUI - bottomUI
-                            local maxScaleH = availableH / playfieldH
-                            if maxScaleH < scale then
-                                scale = maxScaleH
-                            end
+                            -- Cap scale to avoid playfield being too tall
+                            -- Screen is 1280 tall, we want ~100px at top and bottom for UI
+                            -- At scale 2.2, playfield is ~1320 tall which is fine (extends off screen slightly)
+                            if scale > 2.2 then scale = 2.2 end
 
                             -- Center horizontally
                             local x = (screenW - playfieldW * scale) / 2
 
-                            -- Position vertically: center the active play area
-                            -- The y offset needs to account for the playfield origin
-                            local y = topUI - 60 * scale  -- offset to show active area
+                            -- Position vertically: similar to normal portrait but shifted for UI
+                            -- Normal portrait uses y=-260 at scale 2.0
+                            -- We want the active area visible with room for UI at top
+                            local y = -200
 
                             L[i][method](L[i], x, y, scale)
                         else

@@ -98,9 +98,13 @@ scene.widgetList={
     WIDGET.newSlider{name='irscut', x=250,    y=480,lim=230,w=600,axis={0,20,1},disp=SETval('irscut'), show=_sliderShow,code=SETsto('irscut')},
     WIDGET.newSlider{name='dropcut',x=250,    y=540,lim=230,w=300,axis={0,10,1},disp=SETval('dropcut'),show=_sliderShow,code=SETsto('dropcut')},
 
-    WIDGET.newSwitch{name='ihs',    x=1100,   y=240,lim=300,                    disp=SETval('ihs'),    code=SETrev('ihs')},
-    WIDGET.newSwitch{name='irs',    x=1100,   y=300,lim=300,                    disp=SETval('irs'),    code=SETrev('irs')},
-    WIDGET.newSwitch{name='ims',    x=1100,   y=360,lim=300,                    disp=SETval('ims'),    code=SETrev('ims')},
+    WIDGET.newSwitch{name='ihs',    x=1100,   y=180,lim=300,                    disp=SETval('ihs'),    code=SETrev('ihs')},
+    WIDGET.newSwitch{name='irs',    x=1100,   y=240,lim=300,                    disp=SETval('irs'),    code=SETrev('irs')},
+    WIDGET.newSwitch{name='ims',    x=1100,   y=300,lim=300,                    disp=SETval('ims'),    code=SETrev('ims')},
+
+    -- Gesture controls (mobile)
+    WIDGET.newSwitch{name='gestureMode',x=1100,y=400,lim=300,                   disp=SETval('gestureMode'),code=SETrev('gestureMode'),hideF=function() return not MOBILE end},
+    WIDGET.newSlider{name='gestureSens',x=800,y=460,w=260,lim=250,axis={10,40,5},disp=SETval('gestureSensitivity'),code=SETsto('gestureSensitivity'),show=SETval('gestureSensitivity'),hideF=function() return not MOBILE or not SETTING.gestureMode end},
 
     WIDGET.newButton{name='reset',  x=160,    y=640,w=200,h=100,color='lR',font=40,
         code=function()
