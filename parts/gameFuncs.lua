@@ -958,26 +958,21 @@ do-- function freshPlayerPosition(sudden)
                 if i==1 then
                     if SETTING.portrait then
                         if SETTING.maximizeMode then
-                            -- Maximize mode: Scale playfield to fit width, with UI at top/bottom
-                            local screenW, screenH = SCR.w, SCR.h
-                            local playfieldW = 300  -- base playfield width in units
+                            -- Maximize mode: Always use larger scale than normal mode
+                            -- Normal mode uses scale 2.0, maximize should be at least 2.4
+                            local scale = 2.4
 
-                            -- Scale to fit screen width with small margin
-                            local margin = 30
-                            local scale = (screenW - margin * 2) / playfieldW
+                            -- Center playfield horizontally
+                            -- At scale 2.4, playfield is 300 * 2.4 = 720 pixels wide
+                            -- For SCR.w = 720, x = 0 centers it
+                            local playfieldW = 300
+                            local x = (SCR.w - playfieldW * scale) / 2
+                            if x < 0 then x = 0 end  -- Don't go negative
 
-                            -- Cap scale to avoid playfield being too tall
-                            -- Screen is 1280 tall, we want ~100px at top and bottom for UI
-                            -- At scale 2.2, playfield is ~1320 tall which is fine (extends off screen slightly)
-                            if scale > 2.2 then scale = 2.2 end
-
-                            -- Center horizontally
-                            local x = (screenW - playfieldW * scale) / 2
-
-                            -- Position vertically: similar to normal portrait but shifted for UI
-                            -- Normal portrait uses y=-260 at scale 2.0
-                            -- We want the active area visible with room for UI at top
-                            local y = -200
+                            -- Adjust y position for larger scale
+                            -- Normal mode: y=-260 at scale 2.0
+                            -- At scale 2.4, the playfield is taller, so shift up proportionally
+                            local y = -260 * (scale / 2.0) + 40
 
                             L[i][method](L[i], x, y, scale)
                         else

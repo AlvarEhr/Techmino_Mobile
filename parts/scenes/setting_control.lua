@@ -102,9 +102,9 @@ scene.widgetList={
     WIDGET.newSwitch{name='irs',    x=1100,   y=240,lim=300,                    disp=SETval('irs'),    code=SETrev('irs')},
     WIDGET.newSwitch{name='ims',    x=1100,   y=300,lim=300,                    disp=SETval('ims'),    code=SETrev('ims')},
 
-    -- Gesture controls (mobile)
-    WIDGET.newSwitch{name='gestureMode',x=1100,y=400,lim=300,                   disp=SETval('gestureMode'),code=SETrev('gestureMode'),hideF=function() return not MOBILE end},
-    WIDGET.newSlider{name='gestureSens',x=800,y=460,w=260,lim=250,axis={10,40,5},disp=SETval('gestureSensitivity'),code=SETsto('gestureSensitivity'),show=SETval('gestureSensitivity'),hideF=function() return not MOBILE or not SETTING.gestureMode end},
+    -- Gesture controls (mobile) - positioned at bottom right
+    WIDGET.newSwitch{name='gestureMode',x=1100,y=540,lim=300,color='Z',         disp=SETval('gestureMode'),code=SETrev('gestureMode'),hideF=function() return not MOBILE end},
+    WIDGET.newSlider{name='gestureSens',x=800,y=590,w=260,lim=250,axis={10,40,5},disp=SETval('gestureSensitivity'),code=SETsto('gestureSensitivity'),show=SETval('gestureSensitivity'),hideF=function() return not MOBILE or not SETTING.gestureMode end},
 
     WIDGET.newButton{name='reset',  x=160,    y=640,w=200,h=100,color='lR',font=40,
         code=function()
