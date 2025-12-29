@@ -5,12 +5,13 @@ local TIME=TIME
 
 -- Gesture detection thresholds
 local THRESHOLDS = {
-    TAP_TIME = 0.2,              -- Max time for tap (seconds)
-    TAP_DISTANCE = 10,           -- Max movement for tap (pixels) - reduced for responsiveness
+    TAP_TIME = 0.25,             -- Max time for tap (seconds) - slightly longer for reliability
+    TAP_DISTANCE = 20,           -- Max movement for tap (pixels) - more forgiving
 
     SWIPE_DISTANCE = 20,         -- Min distance to register as directional movement
 
-    HARD_DROP_VELOCITY = 600,    -- Min downward velocity for hard drop (pixels/second)
+    HARD_DROP_VELOCITY = 800,    -- Min downward velocity for hard drop (pixels/second) - increased
+    HARD_DROP_DISTANCE = 120,    -- Min distance for hard drop (pixels) - need substantial swipe
     SOFT_DROP_VELOCITY = 100,    -- Min downward velocity for soft drop (pixels/second)
     HOLD_VELOCITY = 400,         -- Min upward velocity for hold (pixels/second)
 }
@@ -108,8 +109,8 @@ function GESTURE.touchMove(x, y, dx, dy, id, player)
         local isPrimarilyVertical = absTotalDY > absTotalDX * 1.5  -- Must be clearly more vertical than horizontal
 
         if isPrimarilyVertical then
-            -- Fast downward swipe = Hard drop
-            if avgVelocityY > THRESHOLDS.HARD_DROP_VELOCITY and totalDY > 50 then
+            -- Fast downward swipe = Hard drop (requires substantial distance to avoid accidental triggers)
+            if avgVelocityY > THRESHOLDS.HARD_DROP_VELOCITY and totalDY > THRESHOLDS.HARD_DROP_DISTANCE then
                 player:act_hardDrop()
                 gesture.instantActionFired = true
                 GESTURE._releaseAll(player)
@@ -118,7 +119,7 @@ function GESTURE.touchMove(x, y, dx, dy, id, player)
             end
 
             -- Fast upward swipe = Hold
-            if avgVelocityY < -THRESHOLDS.HOLD_VELOCITY and totalDY < -50 then
+            if avgVelocityY < -THRESHOLDS.HOLD_VELOCITY and totalDY < -80 then
                 player:act_hold()
                 gesture.instantActionFired = true
                 GESTURE._releaseAll(player)
