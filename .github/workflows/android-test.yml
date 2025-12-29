@@ -155,6 +155,14 @@ jobs:
 
             This is a **debug build** with gesture controls enabled!`;
 
+            // Post the comment on the commit
+            await github.rest.repos.createCommitComment({
+              owner: repo.owner,
+              repo: repo.repo,
+              commit_sha: sha,
+              body: comment
+            });
+
   cleanup:
     runs-on: ubuntu-latest
     if: ${{ always() }}
