@@ -114,6 +114,20 @@ jobs:
         with:
           url: ${{ env.COLD_CLEAR_DOWNLOAD_URL }}/Android.zip
           dir: ${{ env.COLD_CLEAR_FOLDER }}
+      - name: Generate debug keystore
+        id: generate-keystore
+        shell: bash
+        run: |
+          # Generate a debug keystore (valid for testing only)
+          keytool -genkey -v -keystore debug.keystore \
+            -alias androiddebugkey \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass android -keypass android \
+            -dname "CN=Android Debug,O=Android,C=US"
+
+          # Convert to base64 for the action
+          KEYSTORE_BASE64=$(base64 -w 0 debug.keystore)
+          echo "keystore-base64=$KEYSTORE_BASE64" >> $GITHUB_OUTPUT
       - name: Build Android debug APK
         id: build-packages
         uses: love-actions/love-actions-android@v2
@@ -121,6 +135,10 @@ jobs:
           app-name: ${{ needs.get-info.outputs.app-name }}
           bundle-id: ${{ steps.process-app-name.outputs.bundle-id }}
           icon-specifier: "@mipmap/icon"
+          keystore-alias: androiddebugkey
+          keystore-base64: ${{ steps.generate-keystore.outputs.keystore-base64 }}
+          keystore-key-password: android
+          keystore-store-password: android
           love-package: ${{ env.CORE_LOVE_PACKAGE_PATH }}
           resource-path: ${{ env.BUILD_ASSETS_FOLDER }}/android/dev/res
           extra-assets: ${{ env.COLD_CLEAR_FOLDER }}
@@ -129,11 +147,19 @@ jobs:
           version-string: ${{ needs.get-info.outputs.version-string }}
           version-code: ${{ needs.get-info.outputs.version-code }}
           output-folder: ${{ env.OUTPUT_FOLDER }}
+      - name: List build output (debug)
+        shell: bash
+        run: |
+          echo "Contents of build folder:"
+          ls -lah ${{ env.OUTPUT_FOLDER }}/
+          echo "Looking for APK files:"
+          find ${{ env.OUTPUT_FOLDER }}/ -name "*.apk" -type f
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: ${{ needs.get-info.outputs.base-name }}_Android_Debug
-          path: ${{ env.OUTPUT_FOLDER }}/${{ steps.process-app-name.outputs.product-name }}.apk
+          path: ${{ env.OUTPUT_FOLDER }}/*.apk
+          if-no-files-found: error
       - name: Comment on commit with download link
         uses: actions/github-script@v7
         if: github.event_name == 'push'
