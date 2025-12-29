@@ -801,39 +801,32 @@ function draw.norm(P,repMode)
 
         -- Draw HUD
         if maximizeMode then
-            -- Maximize mode: Move left-side elements to top, right-side to bottom
-            -- Hold queue: move from left (12,20) to top-left area
+            -- Maximize mode: Rearrange UI to maximize playfield visibility
+            -- Note: These positions are in player-local coordinates (after scale)
+            -- The playfield is at position (60,-180) with scale 2.0
+
+            -- Hold queue: position at top-left, above the playfield
+            -- Original _drawHold starts at (12,20), we translate to move it
             if ENV.holdMode=='hold' and ENV.holdCount>0 then
                 gc_push('transform')
-                gc_translate(-70, -140)  -- Shift up and left
+                gc_translate(0, -90)  -- Move up to top area
                 _drawHold(P.holdQueue,ENV.holdCount,P.holdTime,P.skinLib)
                 gc_pop()
             end
-            -- Next queue: move from right (488,20) to bottom area
+
+            -- Next queue: position at right side (keep original position for now)
+            -- Making it horizontal would require rewriting _drawNext
             if ENV.nextCount>0 then
-                gc_push('transform')
-                gc_translate(-200, 580)  -- Shift down and center
-                _drawNext(P,repMode)
-                gc_pop()
+                _drawNext(P,repMode)  -- Keep at original right side position
             end
-            -- Mission: move from left to top-center
+
+            -- Other elements: keep at original positions for now
             if P.curMission then
-                gc_push('transform')
-                gc_translate(100, -220)
                 _drawMission(P.curMission,ENV.mission,ENV.missionKill)
-                gc_pop()
             end
-            -- Dial: move from right (499,505) to bottom-right
-            gc_push('transform')
-            gc_translate(-200, 80)
             _drawDial(499,505,P.dropSpeed)
-            gc_pop()
-            -- Life: move from right (475,595) to bottom-right
             if P.life>0 then
-                gc_push('transform')
-                gc_translate(-200, 60)
                 _drawLife(P.life)
-                gc_pop()
             end
         else
             -- Normal mode: Original positions
@@ -1038,16 +1031,9 @@ function draw.norm(P,repMode)
             gc_print(tm,20,540)
         end
 
-        -- FinesseCombo
+        -- FinesseCombo (keep at original position for both modes)
         local drawFinesseCombo = P.type=='remote' and _drawFinesseCombo_remote or _drawFinesseCombo_norm
-        if maximizeMode then
-            gc_push('transform')
-            gc_translate(180, -610)  -- Move to top area
-            drawFinesseCombo(P)
-            gc_pop()
-        else
-            drawFinesseCombo(P)
-        end
+        drawFinesseCombo(P)
 
         -- Mode informations
         for i=1,#ENV.mesDisp do

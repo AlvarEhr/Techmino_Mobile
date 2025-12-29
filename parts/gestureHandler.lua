@@ -77,81 +77,86 @@ function GESTURE.touchMove(x, y, dx, dy, id, player)
     local now = TIME()
     local dt = now - gesture.lastTime
 
-    -- Avoid division by zero
-    if dt < 0.001 then dt = 0.001 end
+    -- Use a minimum dt to prevent velocity spikes
+    if dt < 0.016 then dt = 0.016 end  -- Cap at ~60fps equivalent
 
-    -- Update position and velocity
+    -- Update position
     gesture.currentX = x
     gesture.currentY = y
 
-    -- Calculate velocity (pixels per second)
-    gesture.velocityX = dx / dt
-    gesture.velocityY = dy / dt
-
-    -- Calculate total displacement from start (for tap detection and instant actions)
+    -- Calculate total displacement from start
     local totalDX = x - gesture.startX
     local totalDY = y - gesture.startY
     local totalDistance = math.sqrt(totalDX * totalDX + totalDY * totalDY)
+    local absTotalDX = math.abs(totalDX)
+    local absTotalDY = math.abs(totalDY)
+
+    -- Calculate velocity using total displacement over total time (more stable)
+    local totalTime = now - gesture.startTime
+    if totalTime < 0.016 then totalTime = 0.016 end
+    local avgVelocityY = totalDY / totalTime
 
     -- Detect instant actions (hard drop, hold) - only fire once per gesture
+    -- CRITICAL: Only trigger if swipe is PRIMARILY VERTICAL (prevents accidental triggers during horizontal swipes)
     if not gesture.instantActionFired and totalDistance > THRESHOLDS.SWIPE_DISTANCE then
-        -- Fast downward swipe = Hard drop
-        if gesture.velocityY > THRESHOLDS.HARD_DROP_VELOCITY then
-            player:act_hardDrop()
-            gesture.instantActionFired = true
-            GESTURE._releaseAll(player)
-            gesture.active = false
-            return
-        end
+        local isPrimarilyVertical = absTotalDY > absTotalDX * 1.5  -- Must be clearly more vertical than horizontal
 
-        -- Fast upward swipe = Hold
-        if gesture.velocityY < -THRESHOLDS.HOLD_VELOCITY then
-            player:act_hold()
-            gesture.instantActionFired = true
-            GESTURE._releaseAll(player)
-            gesture.active = false
-            return
+        if isPrimarilyVertical then
+            -- Fast downward swipe = Hard drop
+            if avgVelocityY > THRESHOLDS.HARD_DROP_VELOCITY and totalDY > 50 then
+                player:act_hardDrop()
+                gesture.instantActionFired = true
+                GESTURE._releaseAll(player)
+                gesture.active = false
+                return
+            end
+
+            -- Fast upward swipe = Hold
+            if avgVelocityY < -THRESHOLDS.HOLD_VELOCITY and totalDY < -50 then
+                player:act_hold()
+                gesture.instantActionFired = true
+                GESTURE._releaseAll(player)
+                gesture.active = false
+                return
+            end
         end
     end
 
-    -- Only process movement if we've moved beyond the tap threshold
-    if totalDistance > THRESHOLDS.TAP_DISTANCE then
-        -- Continuous buffer-based horizontal movement
-        -- Add the frame's horizontal movement to the buffer
-        gesture.horizontalBuffer = gesture.horizontalBuffer + dx
+    -- Process horizontal movement (always, regardless of vertical movement)
+    -- Add the frame's horizontal movement to the buffer
+    gesture.horizontalBuffer = gesture.horizontalBuffer + dx
 
-        -- Process moves when buffer exceeds threshold
-        -- Directly manipulate curX to bypass DAS system entirely
-        while gesture.horizontalBuffer >= THRESHOLDS.PIXELS_PER_CELL do
-            -- Move right: check collision and move directly
-            if player.cur and not player:ifoverlap(player.cur.bk, player.curX + 1, player.curY) then
-                player.curX = player.curX + 1
-                player:freshMoveBlock()
-            end
-            gesture.horizontalBuffer = gesture.horizontalBuffer - THRESHOLDS.PIXELS_PER_CELL
+    -- Process moves when buffer exceeds threshold
+    -- Directly manipulate curX to bypass DAS system entirely
+    while gesture.horizontalBuffer >= THRESHOLDS.PIXELS_PER_CELL do
+        -- Move right: check collision and move directly
+        if player.cur and not player:ifoverlap(player.cur.bk, player.curX + 1, player.curY) then
+            player.curX = player.curX + 1
+            player:freshMoveBlock()
         end
-        while gesture.horizontalBuffer <= -THRESHOLDS.PIXELS_PER_CELL do
-            -- Move left: check collision and move directly
-            if player.cur and not player:ifoverlap(player.cur.bk, player.curX - 1, player.curY) then
-                player.curX = player.curX - 1
-                player:freshMoveBlock()
-            end
-            gesture.horizontalBuffer = gesture.horizontalBuffer + THRESHOLDS.PIXELS_PER_CELL
+        gesture.horizontalBuffer = gesture.horizontalBuffer - THRESHOLDS.PIXELS_PER_CELL
+    end
+    while gesture.horizontalBuffer <= -THRESHOLDS.PIXELS_PER_CELL do
+        -- Move left: check collision and move directly
+        if player.cur and not player:ifoverlap(player.cur.bk, player.curX - 1, player.curY) then
+            player.curX = player.curX - 1
+            player:freshMoveBlock()
         end
+        gesture.horizontalBuffer = gesture.horizontalBuffer + THRESHOLDS.PIXELS_PER_CELL
+    end
 
-        -- Soft drop: use pressKey for continuous action (vertical movement)
-        -- Only activate soft drop if moving primarily downward
-        if math.abs(totalDY) > math.abs(totalDX) and gesture.velocityY > THRESHOLDS.SOFT_DROP_VELOCITY then
-            if not gesture.activeActions.softDrop then
-                player:pressKey(7)  -- softDrop
-                gesture.activeActions.softDrop = true
-            end
-        else
-            -- Release soft drop if not moving down anymore
-            if gesture.activeActions.softDrop then
-                player:releaseKey(7)
-                gesture.activeActions.softDrop = false
-            end
+    -- Soft drop: only activate if moving primarily downward with sufficient velocity
+    local isPrimarilyDown = absTotalDY > absTotalDX and totalDY > 20
+    if isPrimarilyDown and avgVelocityY > THRESHOLDS.SOFT_DROP_VELOCITY then
+        if not gesture.activeActions.softDrop then
+            player:pressKey(7)  -- softDrop
+            gesture.activeActions.softDrop = true
+        end
+    else
+        -- Release soft drop if not moving down anymore
+        if gesture.activeActions.softDrop then
+            player:releaseKey(7)
+            gesture.activeActions.softDrop = false
         end
     end
 
