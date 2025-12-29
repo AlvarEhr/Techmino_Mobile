@@ -57,7 +57,7 @@ function scene.update(dt)
 end
 
 function scene.draw()
-    gc.translate(550,600)
+    gc.translate(550,520)
 
     -- Testing grid line
     gc.setLineWidth(4)
@@ -79,7 +79,7 @@ function scene.draw()
     gc.draw(O,40*pos,40,nil,40/30)
     gc.draw(O,40*pos+40,0,nil,40/30)
     gc.draw(O,40*pos+40,40,nil,40/30)
-    gc.translate(-550,-600)
+    gc.translate(-550,-520)
 end
 
 local function _sliderShow(S)
@@ -88,7 +88,7 @@ local function _sliderShow(S)
 end
 scene.widgetList={
     WIDGET.newText{name='title',    x=100,    y=50,lim=626,font=70,align='L'},
-    WIDGET.newText{name='preview',  x=520,    y=610,font=40,align='R'},
+    WIDGET.newText{name='preview',  x=520,    y=530,font=40,align='R'},
 
     WIDGET.newSlider{name='das',    x=250,    y=180,lim=230,w=600,axis={0,20,1},disp=SETval('das'),    show=_sliderShow,code=SETsto('das')},
     WIDGET.newSlider{name='arr',    x=250,    y=240,lim=230,w=525,axis={0,15,1},disp=SETval('arr'),    show=_sliderShow,code=SETsto('arr')},
@@ -104,16 +104,16 @@ scene.widgetList={
 
     -- Gesture controls (mobile) - positioned below other controls
     WIDGET.newSwitch{name='gestureMode',x=1100,y=360,lim=300,                    disp=SETval('gestureMode'),code=SETrev('gestureMode'),hideF=function() return not MOBILE end},
-    WIDGET.newSlider{name='gestureSens',x=250,y=600,w=500,lim=230,axis={1,50,1}, disp=SETval('gestureSensitivity'),code=SETsto('gestureSensitivity'),show=SETval('gestureSensitivity'),hideF=function() return not MOBILE or not SETTING.gestureMode end},
+    WIDGET.newSlider{name='gestureSens',x=250,y=680,w=500,lim=230,axis={1,50,1}, disp=SETval('gestureSensitivity'),code=SETsto('gestureSensitivity'),show=SETval('gestureSensitivity'),hideF=function() return not MOBILE or not SETTING.gestureMode end},
 
-    WIDGET.newButton{name='reset',  x=160,    y=640,w=200,h=100,color='lR',font=40,
+    WIDGET.newButton{name='reset',  x=160,    y=750,w=200,h=100,color='lR',font=40,
         code=function()
             local _=SETTING
             _.das,_.arr,_.dascut=10,2,0
             _.sddas,_.sdarr=0,2
             _.ihs,_.irs,_.ims,_.irscut=false,false,false,6
         end},
-    WIDGET.newButton{name='back',   x=1140,   y=640,w=170,h=80,sound='back',font=60,fText=CHAR.icon.back,code=backScene},
+    WIDGET.newButton{name='back',   x=1140,   y=750,w=170,h=80,sound='back',font=60,fText=CHAR.icon.back,code=backScene},
 }
 
 return scene

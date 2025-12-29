@@ -1101,9 +1101,11 @@ function draw.norm(P,repMode)
             gc_print(tm,20,540)
         end
 
-        -- FinesseCombo (keep at original position for both modes)
-        local drawFinesseCombo = P.type=='remote' and _drawFinesseCombo_remote or _drawFinesseCombo_norm
-        drawFinesseCombo(P)
+        -- FinesseCombo (skip in maximize mode to avoid clutter)
+        if not maximizeMode then
+            local drawFinesseCombo = P.type=='remote' and _drawFinesseCombo_remote or _drawFinesseCombo_norm
+            drawFinesseCombo(P)
+        end
 
         -- Mode informations (skip in maximize mode to avoid clutter)
         if not maximizeMode then
