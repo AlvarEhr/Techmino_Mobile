@@ -121,12 +121,21 @@ function GESTURE.touchMove(x, y, dx, dy, id, player)
         gesture.horizontalBuffer = gesture.horizontalBuffer + dx
 
         -- Process moves when buffer exceeds threshold
+        -- Directly manipulate curX to bypass DAS system entirely
         while gesture.horizontalBuffer >= THRESHOLDS.PIXELS_PER_CELL do
-            player:act_moveRight()
+            -- Move right: check collision and move directly
+            if player.cur and not player:ifoverlap(player.cur.bk, player.curX + 1, player.curY) then
+                player.curX = player.curX + 1
+                player:freshMoveBlock()
+            end
             gesture.horizontalBuffer = gesture.horizontalBuffer - THRESHOLDS.PIXELS_PER_CELL
         end
         while gesture.horizontalBuffer <= -THRESHOLDS.PIXELS_PER_CELL do
-            player:act_moveLeft()
+            -- Move left: check collision and move directly
+            if player.cur and not player:ifoverlap(player.cur.bk, player.curX - 1, player.curY) then
+                player.curX = player.curX - 1
+                player:freshMoveBlock()
+            end
             gesture.horizontalBuffer = gesture.horizontalBuffer + THRESHOLDS.PIXELS_PER_CELL
         end
 
