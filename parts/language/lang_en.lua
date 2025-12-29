@@ -538,6 +538,7 @@ C. Gamepad
             touch="Touch Settings",
             showVK="Show Virtual Keys",
             gestureMode="Gesture Controls",
+            gestureSens="Swipe Sensitivity",
             maximizeMode="Maximize Field",
             reTime="Start Delay",
             RS="Rotation System",

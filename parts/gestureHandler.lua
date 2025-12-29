@@ -13,10 +13,15 @@ local THRESHOLDS = {
     HARD_DROP_VELOCITY = 600,    -- Min downward velocity for hard drop (pixels/second)
     SOFT_DROP_VELOCITY = 100,    -- Min downward velocity for soft drop (pixels/second)
     HOLD_VELOCITY = 400,         -- Min upward velocity for hold (pixels/second)
-
-    -- Direct displacement-based movement: pixels of finger movement = 1 cell
-    PIXELS_PER_CELL = 20,        -- Finger moves 20px = piece moves 1 cell (more responsive)
 }
+
+-- Calculate pixels per cell from sensitivity setting
+-- Sensitivity 10 = 40 px/cell (low sensitivity, big swipes needed)
+-- Sensitivity 30 = 20 px/cell (default)
+-- Sensitivity 40 = 10 px/cell (high sensitivity, small swipes work)
+local function getPixelsPerCell()
+    return 50 - (SETTING.gestureSensitivity or 30)
+end
 
 -- Gesture state tracking
 local gesture = {
@@ -34,7 +39,7 @@ local gesture = {
     velocityY = 0,
 
     -- Accumulated horizontal movement buffer (in pixels)
-    -- When this exceeds PIXELS_PER_CELL, we move the piece and subtract
+    -- When this exceeds getPixelsPerCell(), we move the piece and subtract
     horizontalBuffer = 0,
 
     -- Track which actions are currently active (for soft drop only now)
@@ -128,21 +133,22 @@ function GESTURE.touchMove(x, y, dx, dy, id, player)
 
     -- Process moves when buffer exceeds threshold
     -- Directly manipulate curX to bypass DAS system entirely
-    while gesture.horizontalBuffer >= THRESHOLDS.PIXELS_PER_CELL do
+    local pixelsPerCell = getPixelsPerCell()
+    while gesture.horizontalBuffer >= pixelsPerCell do
         -- Move right: check collision and move directly
         if player.cur and not player:ifoverlap(player.cur.bk, player.curX + 1, player.curY) then
             player.curX = player.curX + 1
             player:freshMoveBlock()
         end
-        gesture.horizontalBuffer = gesture.horizontalBuffer - THRESHOLDS.PIXELS_PER_CELL
+        gesture.horizontalBuffer = gesture.horizontalBuffer - pixelsPerCell
     end
-    while gesture.horizontalBuffer <= -THRESHOLDS.PIXELS_PER_CELL do
+    while gesture.horizontalBuffer <= -pixelsPerCell do
         -- Move left: check collision and move directly
         if player.cur and not player:ifoverlap(player.cur.bk, player.curX - 1, player.curY) then
             player.curX = player.curX - 1
             player:freshMoveBlock()
         end
-        gesture.horizontalBuffer = gesture.horizontalBuffer + THRESHOLDS.PIXELS_PER_CELL
+        gesture.horizontalBuffer = gesture.horizontalBuffer + pixelsPerCell
     end
 
     -- Soft drop: only activate if moving primarily downward with sufficient velocity

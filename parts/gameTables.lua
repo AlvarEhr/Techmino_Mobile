@@ -694,6 +694,7 @@ do-- Userdata tables
 
         -- Gesture controls (mobile-friendly touch controls)
         gestureMode=MOBILE,-- Enable gesture-based touch controls (swipe to move, tap to rotate)
+        gestureSensitivity=30,-- Swipe sensitivity (10=low, 40=high). pixels_per_cell = 50 - sensitivity
         maximizeMode=false,-- Maximize playfield in portrait mode (moves UI to top/bottom)
     }
     KEY_MAP={-- Key setting

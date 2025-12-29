@@ -958,9 +958,33 @@ do-- function freshPlayerPosition(sudden)
                 if i==1 then
                     if SETTING.portrait then
                         if SETTING.maximizeMode then
-                            -- Maximize mode: UI moved to top/bottom, center the playfield
-                            -- Scale 2.0x for better fit with rearranged UI
-                            L[i][method](L[i],60,-180,2.0)
+                            -- Maximize mode: Dynamic scaling to maximize playfield
+                            -- Calculate scale based on screen width (with margin)
+                            local screenW, screenH = SCR.w, SCR.h
+                            local margin = 20
+                            local playfieldW = 300  -- base playfield width in units
+                            local playfieldH = 600  -- visible playfield height in units
+
+                            -- Scale to fit width (primary constraint)
+                            local scale = (screenW - margin * 2) / playfieldW
+
+                            -- Check height constraint (leave room for UI at top/bottom)
+                            local topUI = 90    -- space for hold piece
+                            local bottomUI = 90 -- space for horizontal next queue
+                            local availableH = screenH - topUI - bottomUI
+                            local maxScaleH = availableH / playfieldH
+                            if maxScaleH < scale then
+                                scale = maxScaleH
+                            end
+
+                            -- Center horizontally
+                            local x = (screenW - playfieldW * scale) / 2
+
+                            -- Position vertically: center the active play area
+                            -- The y offset needs to account for the playfield origin
+                            local y = topUI - 60 * scale  -- offset to show active area
+
+                            L[i][method](L[i], x, y, scale)
                         else
                             -- Normal portrait mode (2x scale as original)
                             L[i][method](L[i],36,-260,2)

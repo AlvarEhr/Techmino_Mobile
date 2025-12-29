@@ -581,6 +581,97 @@ local function _drawNext(P,repMode)
         end
     gc_translate(-488,-20)
 end
+-- Horizontal next queue for maximize mode (draws at absolute screen position)
+local function _drawNextHorizontal(P, screenY)
+    local ENV = P.gameEnv
+    local texture = P.skinLib
+    local queue = P.nextQueue
+    local count = math.min(ENV.nextCount, 5)  -- Limit to 5 pieces for horizontal layout
+
+    if count <= 0 then return end
+
+    gc_push('transform')
+    gc_origin()  -- Reset to screen coordinates
+
+    -- Calculate total width and center horizontally
+    local pieceWidth = 72
+    local totalWidth = count * pieceWidth
+    local startX = (SCR.w - totalWidth) / 2
+
+    -- Draw background
+    gc_setColor(0, 0, 0, 0.4)
+    gc_rectangle('fill', startX - 10, screenY - 5, totalWidth + 20, 80, 5)
+    gc_setColor(0.97, 0.97, 0.97)
+    gc_rectangle('line', startX - 10, screenY - 5, totalWidth + 20, 80, 5)
+
+    -- Draw pieces horizontally
+    gc_setShader(shader_blockSatur)
+    gc_setColor(1, 1, 1)
+    for n = 1, count do
+        if queue[n] then
+            local bk = queue[n].bk
+            local sprite = texture[queue[n].color]
+            local k = math.min(2.3 / #bk, 3 / #bk[1], 0.7)
+            local x = startX + (n - 0.5) * pieceWidth
+            local y = screenY + 35
+
+            gc_push('transform')
+            gc_translate(x, y)
+            gc_scale(k)
+            for i = 1, #bk do
+                for j = 1, #bk[1] do
+                    if bk[i][j] then
+                        gc_draw(sprite, 30 * (j - #bk[1] * 0.5) - 15, -30 * (i - #bk * 0.5))
+                    end
+                end
+            end
+            gc_pop()
+        end
+    end
+    gc_setShader()
+    gc_pop()
+end
+-- Draw hold piece at absolute screen position for maximize mode
+local function _drawHoldAbsolute(holdQueue, holdCount, holdTime, skinLib, screenX, screenY)
+    if not holdQueue[1] then return end
+
+    gc_push('transform')
+    gc_origin()  -- Reset to screen coordinates
+
+    -- Draw background
+    gc_setColor(0, 0, 0, 0.4)
+    gc_rectangle('fill', screenX - 5, screenY - 5, 80, 80, 5)
+    gc_setColor(0.97, 0.97, 0.97)
+    gc_rectangle('line', screenX - 5, screenY - 5, 80, 80, 5)
+
+    -- Draw the hold piece
+    gc_setShader(shader_blockSatur)
+    if holdTime > 0 then
+        gc_setColor(0.5, 0.5, 0.5)  -- Grayed out if hold was just used
+    else
+        gc_setColor(1, 1, 1)
+    end
+
+    local B = holdQueue[1]
+    local bk = B.bk
+    local sprite = skinLib[B.color]
+    local k = math.min(2.3 / #bk, 3 / #bk[1], 0.7)
+
+    gc_push('transform')
+    gc_translate(screenX + 35, screenY + 35)
+    gc_scale(k)
+    for i = 1, #bk do
+        for j = 1, #bk[1] do
+            if bk[i][j] then
+                gc_draw(sprite, 30 * (j - #bk[1] * 0.5) - 15, -30 * (i - #bk * 0.5))
+            end
+        end
+    end
+    gc_pop()
+
+    gc_setShader()
+    gc_pop()
+end
 local _drawDial do
     local function _getDialBackColor(speed)
         if     speed<60  then return COLOR.H
@@ -801,33 +892,12 @@ function draw.norm(P,repMode)
 
         -- Draw HUD
         if maximizeMode then
-            -- Maximize mode: Rearrange UI to maximize playfield visibility
-            -- Note: These positions are in player-local coordinates (after scale)
-            -- The playfield is at position (60,-180) with scale 2.0
-
-            -- Hold queue: position at top-left, above the playfield
-            -- Original _drawHold starts at (12,20), we translate to move it
-            if ENV.holdMode=='hold' and ENV.holdCount>0 then
-                gc_push('transform')
-                gc_translate(0, -90)  -- Move up to top area
-                _drawHold(P.holdQueue,ENV.holdCount,P.holdTime,P.skinLib)
-                gc_pop()
-            end
-
-            -- Next queue: position at right side (keep original position for now)
-            -- Making it horizontal would require rewriting _drawNext
-            if ENV.nextCount>0 then
-                _drawNext(P,repMode)  -- Keep at original right side position
-            end
-
-            -- Other elements: keep at original positions for now
+            -- Maximize mode: Skip hold/next here, they will be drawn at absolute positions after gc_pop
+            -- Only draw mission, dial, and life in player coordinates
             if P.curMission then
                 _drawMission(P.curMission,ENV.mission,ENV.missionKill)
             end
-            _drawDial(499,505,P.dropSpeed)
-            if P.life>0 then
-                _drawLife(P.life)
-            end
+            -- Skip dial and life for now to avoid clutter
         else
             -- Normal mode: Original positions
             if ENV.nextCount>0 then _drawNext(P,repMode) end
@@ -1060,6 +1130,21 @@ function draw.norm(P,repMode)
             _drawStartCounter(P.frameRun)
         end
     gc_pop()
+
+    -- Maximize mode: Draw hold and next at absolute screen positions (outside player transform)
+    if SETTING.maximizeMode and SETTING.portrait then
+        local ENV = P.gameEnv
+
+        -- Draw hold piece at top-left of screen
+        if ENV.holdMode == 'hold' and ENV.holdCount > 0 then
+            _drawHoldAbsolute(P.holdQueue, ENV.holdCount, P.holdTime, P.skinLib, 10, 5)
+        end
+
+        -- Draw horizontal next queue at bottom of screen
+        if ENV.nextCount > 0 then
+            _drawNextHorizontal(P, SCR.h - 85)
+        end
+    end
 end
 function draw.small(P)
     -- Update canvas

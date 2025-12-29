@@ -44,6 +44,7 @@ scene.widgetList={
     WIDGET.newButton{name='touch',    x=990,  y=220, w=320,h=80,color=not MOBILE and 'dH',font=35,         code=goScene'setting_touch',hideF=function() return not SETTING.VKSwitch end},
     WIDGET.newSwitch{name='showVK',   x=1100, y=150, lim=400,                    disp=SETval('VKSwitch'), code=SETrev('VKSwitch')},
     WIDGET.newSwitch{name='gestureMode',x=450, y=150, lim=300,                  disp=SETval('gestureMode'),code=SETrev('gestureMode')},
+    WIDGET.newSlider{name='gestureSens',x=130, y=185, w=260,lim=200,axis={10,40,5},disp=SETval('gestureSensitivity'),code=SETsto('gestureSensitivity'),show=SETval('gestureSensitivity'),hideF=function() return not SETTING.gestureMode end},
     WIDGET.newSwitch{name='maximizeMode',x=450,y=610, lim=300,                  disp=SETval('maximizeMode'),code=SETrev('maximizeMode')},
     WIDGET.newSlider{name='reTime',   x=330,  y=320, w=300,lim=180,axis={.5,3,.25},disp=SETval('reTime'), code=SETsto('reTime'),show=SETval('reTime')},
     WIDGET.newSelector{name='RS',     x=300,  y=420, w=300,color='S',            disp=SETval('RS'),       code=SETsto('RS'),list={'TRS','SRS','SRS_plus','SRS_X','BiRS','ARS_Z','DRS_weak','ASC','ASC_plus','C2','C2_sym','N64','N64_plus','Classic','Classic_plus','None','None_plus'}},
