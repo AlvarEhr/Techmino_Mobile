@@ -656,7 +656,7 @@ do-- Userdata tables
         highCam=true,
         nextPos=true,
         fullscreen=SYSTEM~='Web',
-        portrait=false,
+        portrait=MOBILE,-- Default to portrait on mobile to match conf.lua
         msaa=0,
         bg='on',
         bgAlpha=.26,
